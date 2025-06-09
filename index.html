@@ -78,6 +78,20 @@
         #results p {
             margin: 5px 0; /* Reduced margin for results */
         }
+
+        #chart-container {
+            margin-top: 20px;
+            text-align: center; /* Center the chart */
+        }
+
+        canvas {
+            background: #1e1e1e; /* Background for the canvas */
+            border: 1px solid #555555; /* Border for the canvas */
+            border-radius: 4px; /* Rounded corners for the canvas */
+            width: 100%; /* Full width for the canvas */
+            max-width: 400px; /* Limit the width of the canvas */
+            height: 300px; /* Fixed height for the canvas */
+        }
     </style>
 </head>
 <body>
@@ -98,6 +112,10 @@
         <p id="equation-result">Persamaan Regresi: -</p>
         <p id="correlation-result">Koefisien Korelasi (r): -</p>
         <p id="determination-result">Koefisien Determinasi (r²): -</p>
+    </div>
+
+    <div id="chart-container">
+        <canvas id="regression-chart"></canvas>
     </div>
 
     <script>
@@ -125,6 +143,49 @@
             return { a, b, r, r2 };
         }
 
+        function plotChart(canvas, x, y, a, b) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw axes
+            ctx.strokeStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(40, height - 40); // X-axis
+            ctx.lineTo(width - 40, height - 40);
+            ctx.moveTo(40, height - 40); // Y-axis
+            ctx.lineTo(40, 20);
+            ctx.stroke();
+
+            // Plot points
+            ctx.fillStyle = '#4f46e5';
+            for (let i = 0; i < x.length; i++) {
+                const xPos = 40 + (x[i] - Math.min(...x)) / (Math.max(...x) - Math.min(...x)) * (width - 80);
+                const yPos = height - 40 - (y[i] - Math.min(...y)) / (Math.max(...y) - Math.min(...y)) * (height - 80);
+                ctx.beginPath();
+                ctx.arc(xPos, yPos, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw regression line
+            ctx.strokeStyle = '#ff0000'; // Red color for the regression line
+            ctx.beginPath();
+            const startX = Math.min(...x);
+            const endX = Math.max(...x);
+            const startY = a + b * startX;
+            const endY = a + b * endX;
+            const startXPos = 40 + (startX - Math.min(...x)) / (Math.max(...x) - Math.min(...x)) * (width - 80);
+            const startYPos = height - 40 - (startY - Math.min(...y)) / (Math.max(...y) - Math.min(...y)) * (height - 80);
+            const endXPos = 40 + (endX - Math.min(...x)) / (Math.max(...x) - Math.min(...x)) * (width - 80);
+            const endYPos = height - 40 - (endY - Math.min(...y)) / (Math.max(...y) - Math.min(...y)) * (height - 80);
+            ctx.moveTo(startXPos, startYPos);
+            ctx.lineTo(endXPos, endYPos);
+            ctx.stroke();
+        }
+
         document.getElementById('data-form').addEventListener('submit', function (event) {
             event.preventDefault();
 
@@ -145,6 +206,10 @@
             document.getElementById('equation-result').textContent = `Persamaan Regresi: y = ${regression.a.toFixed(4)} + ${regression.b.toFixed(4)}x`;
             document.getElementById('correlation-result').textContent = `Koefisien Korelasi (r): ${regression.r.toFixed(4)}`;
             document.getElementById('determination-result').textContent = `Koefisien Determinasi (r²): ${regression.r2.toFixed(4)}`;
+
+            // Plot the chart
+            const canvas = document.getElementById('regression-chart');
+            plotChart(canvas, x, y, regression.a, regression.b);
         });
     </script>
 </body>
