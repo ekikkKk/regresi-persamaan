@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Statistika Regresi - Kalkulator Regresi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --color-bg: #ffffff;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6b7280;
+            --color-accent: #111827;
+            --color-card-bg: #f9fafb;
+            --color-border-radius: 0.75rem;
+            --font-heading: 'Inter', sans-serif;
+            --transition: 0.3s ease;
+        }
+
+        /* Reset & base */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--color-bg);
+            font-family: var(--font-heading);
+            color: var(--color-text-secondary);
+            font-size: 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--color-bg);
+            border-bottom: 1px solid #e5e7eb;
+            z-index: 10;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            font-size: 1.25rem;
+            color: var(--color-text-primary);
+            user-select: none;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 2rem auto 4rem;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 3.5rem;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+        p.subtitle {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+        }
+
+        form {
+            background: var(--color-card-bg);
+            padding: 1.5rem 2rem;
+            border-radius: var(--color-border-radius);
+            box-shadow: 0 4px 8px rgb(0 0 0 / 0.05);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            font-family: var(--font-heading);
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--color-text-primary);
+            border: 1.5px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            transition: border-color var(--transition);
+            resize: vertical;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 6px rgba(17,24,39,0.15);
+        }
+
+        textarea {
+            min-height: 120px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        button {
+            grid-column: 1 / -1;
+            background: var(--color-accent);
+            color: white;
+            font-weight: 700;
+            font-size: 1.125rem;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            padding: 0.85rem 1.5rem;
+            transition: background-color var(--transition), transform 0.15s ease;
+            align-self: end;
+            justify-self: start;
+            width: max-content;
+            user-select: none;
+        }
+
+        button:hover {
+            background: #27272a;
+            transform: scale(1.05);
+        }
+
+        button:focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--color-card-bg);
+            padding: 1.5rem 2rem;
+            border-radius: var(--color-border-radius);
+            box-shadow: 0 4px 8px rgb(0 0 0 / 0.05);
+            color: var(--color-text-primary);
+        }
+
+        .card h2 {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--color-accent);
+        }
+
+        .card p {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        #chart-container {
+            background: var(--color-card-bg);
+            border-radius: var(--color-border-radius);
+            box-shadow: 0 4px 8px rgb(0 0 0 / 0.05);
+            padding: 1rem 1.5rem;
+        }
+
+        #regression-chart {
+            width: 100%;
+            height: 320px;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            padding: 1rem;
+        }
+
+        @media (max-width: 500px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>Statistika Regresi</header>
+<main>
+    <h1>Kalkulator Regresi dan Korelasi</h1>
+    <p class="subtitle">Masukkan data X dan Y sebagai daftar angka dipisah koma. Contoh: 1, 2, 3, 4, 5</p>
+
+    <form id="data-form" aria-label="Form Data Input">
+        <div>
+            <label for="input-x">Data X (independen):</label>
+            <textarea id="input-x" aria-describedby="desc-x" placeholder="contoh: 1, 2, 3, 4, 5" required></textarea>
+        </div>
+        <div>
+            <label for="input-y">Data Y (dependen):</label>
+            <textarea id="input-y" aria-describedby="desc-y" placeholder="contoh: 2, 4, 5, 4, 5" required></textarea>
+        </div>
+        <button type="submit" aria-label="Hitung Regresi, Korelasi dan Grafik">Hitung</button>
+    </form>
+
+    <section class="results" aria-live="polite" aria-atomic="true" aria-relevant="additions">
+        <article class="card" id="equation-card" aria-label="Persamaan Regresi">
+            <h2>Persamaan Regresi</h2>
+            <p id="equation-result">Silakan masukkan data dan hitung.</p>
+        </article>
+        <article class="card" id="correlation-card" aria-label="Koefisien Korelasi">
+            <h2>Koefisien Korelasi (r)</h2>
+            <p id="correlation-result">Silakan masukkan data dan hitung.</p>
+        </article>
+        <article class="card" id="determination-card" aria-label="Koefisien Determinasi">
+            <h2>Koefisien Determinasi (r²)</h2>
+            <p id="determination-result">Silakan masukkan data dan hitung.</p>
+        </article>
+    </section>
+
+    <section id="chart-container" aria-label="Grafik Regresi">
+        <canvas id="regression-chart" role="img" aria-describedby="chart-desc"></canvas>
+        <p id="chart-desc" style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+            Grafik titik data (scatter plot) dan garis regresi linier dari data yang dimasukkan.
+        </p>
+    </section>
+</main>
+<footer>
+    &copy; 2024 Statistika Regresi
+</footer>
+
+<script>
+    // Parse comma-separated numbers, trimming spaces and filtering invalid entries
+    function parseNumberList(str) {
+        return str
+            .split(',')
+            .map(s => s.trim())
+            .filter(s => s.length > 0)
+            .map(s => Number(s))
+            .filter(n => !isNaN(n));
+    }
+
+    // Compute linear regression parameters and correlations
+    function linearRegression(x, y) {
+        const n = x.length;
+        if (n === 0 || n !== y.length) return null;
+
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+        for (let i = 0; i < n; i++) {
+            sumX += x[i];
+            sumY += y[i];
+            sumXY += x[i] * y[i];
+            sumX2 += x[i] * x[i];
+            sumY2 += y[i] * y[i];
+        }
+        const meanX = sumX / n;
+        const meanY = sumY / n;
+
+        const numerator = (sumXY - n * meanX * meanY);
+        const denominator = (sumX2 - n * meanX * meanX);
+        if (denominator === 0) return null;
+
+        const b = numerator / denominator;
+        const a = meanY - b * meanX;
+
+        const varianceX = (sumX2 - n * meanX * meanX);
+        const varianceY = (sumY2 - n * meanY * meanY);
+        if (varianceX <= 0 || varianceY <= 0) return null;
+
+        const r = numerator / Math.sqrt(varianceX * varianceY);
+        const r2 = r * r;
+
+        return { a, b, r, r2, x, y };
+    }
+
+    // Plot points and regression line on canvas, with dynamic sizing
+    function plotChart(canvas, data) {
+        if (!canvas || !data) return;
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas width and height to match display size * devicePixelRatio for sharpness
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+        ctx.scale(dpr, dpr);
+
+        // Clear canvas
+        ctx.clearRect(0, 0, w, h);
+
+        const padding = 40;
+
+        // Data boundaries
+        const xs = data.x;
+        const ys = data.y;
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+
+        // Prevent zero range
+        const xRange = (maxX - minX) || 1;
+        const yRange = (maxY - minY) || 1;
+
+        // Map data coordinate to canvas x position
+        function mapX(val) { return padding + ((val - minX) / xRange) * (w - 2 * padding); }
+        // Map data coordinate to canvas y position (inverted)
+        function mapY(val) { return h - padding - ((val - minY) / yRange) * (h - 2 * padding); }
+
+        // Draw axes
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, h - padding);
+        ctx.lineTo(w - padding, h - padding);
+        ctx.moveTo(padding, h - padding);
+        ctx.lineTo(padding, padding);
+        ctx.stroke();
+
+        // Axis labels
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(minX.toFixed(2), mapX(minX), h - padding + 15);
+        ctx.fillText(maxX.toFixed(2), mapX(maxX), h - padding + 15);
+        ctx.textAlign = 'right';
+        ctx.fillText(minY.toFixed(2), padding - 6, mapY(minY) + 4);
+        ctx.fillText(maxY.toFixed(2), padding - 6, mapY(maxY) + 4);
+
+        // Draw scatter points
+        ctx.fillStyle = 'rgba(17, 24, 39, 0.8)';
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 1;
+        xs.forEach((xVal, i) => {
+            const yVal = ys[i];
+            const cx = mapX(xVal);
+            const cy = mapY(yVal);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        });
+
+        // Draw regression line y = a + b*x
+        const { a, b } = data;
+        const yStart = a + b * minX;
+        const yEnd = a + b * maxX;
+        const startX = mapX(minX);
+        const startY = mapY(yStart);
+        const endX = mapX(maxX);
+        const endY = mapY(yEnd);
+
+        ctx.strokeStyle = '#4f46e5';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+    }
+
+    // Main form submit handler
+    document.getElementById('data-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const inputX = document.getElementById('input-x').value;
+        const inputY = document.getElementById('input-y').value;
+
+        const x = parseNumberList(inputX);
+        const y = parseNumberList(inputY);
+
+        if (x.length === 0 || y.length === 0) {
+            alert('Data X dan Y harus diisi dengan angka valid.');
+            return;
+        }
+        if (x.length !== y.length) {
+            alert('Jumlah data X dan Y harus sama.');
+            return;
+        }
+        if (x.length < 2) {
+            alert('Masukkan minimal 2 data point untuk melakukan regresi.');
+            return;
+        }
+
+        const regression = linearRegression(x, y);
+        if (!regression) {
+            alert('Tidak dapat menghitung regresi dengan data yang diberikan.');
+            return;
+        }
+
+        // Display formatted results
+        const aRounded = regression.a.toFixed(4);
+        const bRounded = regression.b.toFixed(4);
+        let equation = `y = ${aRounded}`;
+        equation += (regression.b >= 0) ? ` + ${bRounded}x` : ` - ${Math.abs(bRounded)}x`;
+
+        document.getElementById('equation-result').textContent = equation;
+        document.getElementById('correlation-result').textContent = regression.r.toFixed(4);
+        document.getElementById('determination-result').textContent = regression.r2.toFixed(4);
+
+        // Plot chart
+        try {
+            plotChart(document.getElementById('regression-chart'), regression);
+        } catch (e) {
+            console.error('Error plotting chart:', e);
+            alert('Terjadi kesalahan saat menggambar grafik.');
+        }
+    });
+</script>
+</body>
+</html>
